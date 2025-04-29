@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
 import Sidebar from "@/components/Sidebar";
@@ -13,7 +13,8 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 );
 
-export default function Protected() {
+// Separate client component for key validation
+function KeyValidator() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [showFlash, setShowFlash] = useState(false);
@@ -29,7 +30,6 @@ export default function Protected() {
       }
 
       try {
-        // Check if the API key exists in the database
         const { data, error } = await supabase
           .from("api_keys")
           .select()
@@ -47,7 +47,6 @@ export default function Protected() {
           return;
         }
 
-        // Key is valid
         setFlashMessage("Valid API key, /protected can be accessed");
         setFlashType("success");
         setShowFlash(true);
@@ -67,27 +66,34 @@ export default function Protected() {
     validateKey();
   }, [searchParams, router]);
 
+  return showFlash ? (
+    <FlashMessage
+      message={flashMessage}
+      type={flashType}
+      onClose={() => setShowFlash(false)}
+    />
+  ) : null;
+}
+
+// Main protected page component
+export default function Protected() {
   return (
     <div className="flex min-h-screen bg-gray-50">
-      {showFlash && (
-        <FlashMessage
-          message={flashMessage}
-          type={flashType}
-          onClose={() => setShowFlash(false)}
-        />
-      )}
       <Sidebar />
       <div className="flex-1 flex flex-col">
         <TopBar />
         <main className="flex-1 p-8">
-          <div className="max-w-2xl mx-auto">
-            <div className="bg-white rounded-2xl shadow-lg p-8">
-              <h1 className="text-2xl font-bold mb-6">Protected Page</h1>
-              <p className="text-gray-600">
-                This page can only be accessed with a valid API key.
-              </p>
+          <Suspense fallback={<div>Loading...</div>}>
+            <KeyValidator />
+            <div className="max-w-2xl mx-auto">
+              <div className="bg-white rounded-2xl shadow-lg p-8">
+                <h1 className="text-2xl font-bold mb-6">Protected Page</h1>
+                <p className="text-gray-600">
+                  This page can only be accessed with a valid API key.
+                </p>
+              </div>
             </div>
-          </div>
+          </Suspense>
         </main>
       </div>
     </div>
