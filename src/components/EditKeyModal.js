@@ -110,7 +110,7 @@ export default function EditKeyModal({ open, onClose, onEdit, keyData }) {
               min={1}
             />
             <p className="text-xs text-gray-400 mt-1">
-              * If the combined usage of all your keys exceeds your plan's
+              * If the combined usage of all your keys exceeds your plan&apos;s
               limit, all requests will be rejected.
             </p>
           </div>
