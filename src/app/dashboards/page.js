@@ -19,6 +19,7 @@ import PlanCard from "@/components/PlanCard";
 import CreateKeyModal from "@/components/CreateKeyModal";
 import EditKeyModal from "@/components/EditKeyModal";
 import FlashMessage from "@/components/FlashMessage";
+import { generateApiKey } from "@/lib/utils";
 
 // Initialize Supabase client
 const supabase = createClient(
@@ -68,7 +69,7 @@ export default function Dashboard() {
         id: nextId,
         name: keyData.name,
         type: keyData.type,
-        key: generateApiKey(),
+        key: generateApiKey(keyData.type),
         created_at: new Date().toISOString(),
       };
 
@@ -93,16 +94,6 @@ export default function Dashboard() {
       setShowFlashMessage(true);
       setTimeout(() => setShowFlashMessage(false), 3000);
     }
-  };
-
-  const generateApiKey = () => {
-    const chars =
-      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    let key = "";
-    for (let i = 0; i < 32; i++) {
-      key += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return key;
   };
 
   const deleteApiKey = async (id) => {
